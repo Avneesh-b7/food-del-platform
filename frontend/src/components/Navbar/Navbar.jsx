@@ -1,0 +1,131 @@
+import React from "react";
+import { useState } from "react";
+
+function Navbar() {
+  const [active, setActive] = useState("noneactive");
+
+  const navItems = ["Home", "Menu", "Mobile App", "Contact Us", "Test"];
+
+  function handleActive(item) {
+    setActive(item);
+  }
+
+  return (
+    <>
+      <div className="navbar w-full bg-white shadow-md">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
+          {/* Logo */}
+          <div className="flex items-center gap-2">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-2xl">
+              <span role="img" aria-label="food"></span>
+              🍜
+            </div>
+            <span className="text-xl font-bold tracking-tight text-gray-800">
+              QuickBite
+            </span>
+          </div>
+
+          {/* Center Nav Links */}
+          <nav className="flex items-center gap-6 text-sm font-medium text-gray-700">
+            <button
+              onClick={() => {
+                handleActive("Home");
+              }}
+              className={`${
+                active == "Home"
+                  ? "text-red-500 underline font bold"
+                  : "hover:text-red-500"
+              }`}
+            >
+              Home
+            </button>
+            <button
+              onClick={() => {
+                handleActive("Menu");
+              }}
+              className={`${
+                active == "Menu"
+                  ? "text-red-500 underline font bold"
+                  : "hover:text-red-500"
+              }`}
+            >
+              Menu
+            </button>
+            <button
+              onClick={() => {
+                handleActive("Mobile App");
+              }}
+              className={`${
+                active == "Mobile App"
+                  ? "text-red-500 underline font bold"
+                  : "hover:text-red-500"
+              }`}
+            >
+              Mobile App
+            </button>
+            <button
+              onClick={() => {
+                handleActive("Contact Us");
+              }}
+              className={`${
+                active == "Contact Us"
+                  ? "text-red-500 underline font bold"
+                  : "hover:text-red-500"
+              }`}
+            >
+              Contact Us
+            </button>
+            <button
+              className={`${
+                active == "Test"
+                  ? "text-red-500 underline font-bold"
+                  : "hover:text-red-500"
+              }`}
+              onClick={() => {
+                handleActive("Test");
+              }}
+            >
+              Test
+            </button>
+          </nav>
+
+          {/* Right Side: Search + Cart + Sign In */}
+          <div className="flex items-center gap-4">
+            {/* Search */}
+            <div className="flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1.5">
+              <span
+                role="img"
+                aria-label="search"
+                className="text-gray-500 text-sm"
+              >
+                🔍
+              </span>
+              <input
+                type="text"
+                placeholder="Search dishes or restaurants"
+                className="w-52 border-none text-sm text-gray-700 placeholder:text-gray-400 focus:outline-none"
+              />
+            </div>
+
+            {/* Cart Button */}
+            <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-lg hover:border-red-500 hover:text-red-500 transition-colors">
+              <span role="img" aria-label="cart">
+                🛒
+              </span>
+              {/* Example badge */}
+              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                2
+              </span>
+            </button>
+
+            {/* Sign In Button */}
+            <button className="rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600 transition-colors">
+              Sign In
+            </button>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+export default Navbar;
