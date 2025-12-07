@@ -1,5 +1,5 @@
-import React from "react";
-import { useState } from "react";
+import { useState, useContext, React, useEffect } from "react";
+import { StoreContext } from "../../context/StoreContext.jsx";
 
 function Navbar() {
   const [active, setActive] = useState("noneactive");
@@ -9,6 +9,13 @@ function Navbar() {
   function handleActive(item) {
     setActive(item);
   }
+
+  const { cartItems, setCartItems } = useContext(StoreContext);
+
+  const totalCount = Object.values(cartItems).reduce(
+    (sum, value) => sum + value,
+    0
+  );
 
   return (
     <>
@@ -75,18 +82,6 @@ function Navbar() {
             >
               Contact Us
             </button>
-            <button
-              className={`${
-                active == "Test"
-                  ? "text-red-500 underline font-bold"
-                  : "hover:text-red-500"
-              }`}
-              onClick={() => {
-                handleActive("Test");
-              }}
-            >
-              Test
-            </button>
           </nav>
 
           {/* Right Side: Search + Cart + Sign In */}
@@ -113,9 +108,11 @@ function Navbar() {
                 🛒
               </span>
               {/* Example badge */}
-              <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
-                2
-              </span>
+              {totalCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
+                  {totalCount}
+                </span>
+              )}
             </button>
 
             {/* Sign In Button */}
