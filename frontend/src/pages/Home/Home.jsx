@@ -7,19 +7,11 @@ import { StoreContext } from "../../context/StoreContext.jsx";
 
 function Home() {
   const [catg, setCatg] = useState("all");
-  const { cartItems, setCartItems } = useContext(StoreContext);
-
-  useEffect(() => {
-    const totalCount = Object.values(cartItems).reduce(
-      (sum, value) => sum + value,
-      0
-    );
-  }, [cartItems]);
 
   return (
     <>
       {/* <h1>this is home page</h1> */}
-      <Navbar />
+
       <Header />
       <ExploreMenu category={catg} setCategory={setCatg} />
       <FoodItemDisplay category={catg} setCategory={setCatg} />
