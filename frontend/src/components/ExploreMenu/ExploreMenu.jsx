@@ -27,7 +27,7 @@ function ExploreMenu({ category, setCategory }) {
                                 : "border border-gray-200"
                             }`}
                 onClick={() => {
-                  if (category == list_element.name) {
+                  if (category === list_element.name) {
                     setCategory("all");
                   } else {
                     setCategory(list_element.name);
