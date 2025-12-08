@@ -1,10 +1,13 @@
 import { useState, useContext, React, useEffect } from "react";
 import { StoreContext } from "../../context/StoreContext.jsx";
+import { Link } from "react-router-dom";
+import { HashLink } from "react-router-hash-link";
+import { SignUpPopup } from "../SLPopup/SignUpPopup.jsx";
 
-function Navbar() {
+function Navbar({ showLogin, showSignUp }) {
   const [active, setActive] = useState("noneactive");
 
-  const navItems = ["Home", "Menu", "Mobile App", "Contact Us", "Test"];
+  const navItems = ["Home", "Menu", "Contact Us"];
 
   function handleActive(item) {
     setActive(item);
@@ -44,8 +47,11 @@ function Navbar() {
                   : "hover:text-red-500"
               }`}
             >
-              Home
+              <HashLink smooth to="/">
+                Home
+              </HashLink>
             </button>
+
             <button
               onClick={() => {
                 handleActive("Menu");
@@ -56,20 +62,11 @@ function Navbar() {
                   : "hover:text-red-500"
               }`}
             >
-              Menu
+              <HashLink smooth to="/#explore-menu-id">
+                Menu
+              </HashLink>
             </button>
-            <button
-              onClick={() => {
-                handleActive("Mobile App");
-              }}
-              className={`${
-                active == "Mobile App"
-                  ? "text-red-500 underline font bold"
-                  : "hover:text-red-500"
-              }`}
-            >
-              Mobile App
-            </button>
+
             <button
               onClick={() => {
                 handleActive("Contact Us");
@@ -80,7 +77,9 @@ function Navbar() {
                   : "hover:text-red-500"
               }`}
             >
-              Contact Us
+              <HashLink smooth to="/#footer-id">
+                Contact Us
+              </HashLink>
             </button>
           </nav>
 
@@ -116,7 +115,13 @@ function Navbar() {
             </button>
 
             {/* Sign In Button */}
-            <button className="rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600 transition-colors">
+            <button
+              onClick={() => {
+                showSignUp(true);
+                showLogin(false);
+              }}
+              className="rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600 transition-colors"
+            >
               Sign In
             </button>
           </div>

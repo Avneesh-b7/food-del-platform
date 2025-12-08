@@ -2,7 +2,7 @@ import React from "react";
 
 function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300 py-10 mt-20">
+    <footer className="bg-gray-900 text-gray-300 py-10 mt-20" id="footer-id">
       <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between gap-10">
         {/* Brand Section */}
         <div className="max-w-xs">

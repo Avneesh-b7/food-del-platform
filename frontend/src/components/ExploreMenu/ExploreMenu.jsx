@@ -4,7 +4,10 @@ import { menu_list } from "../../assets/assets.js";
 function ExploreMenu({ category, setCategory }) {
   return (
     <>
-      <div className="w-full flex flex-col items-center mt-12">
+      <div
+        className="w-full flex flex-col items-center mt-12"
+        id="explore-menu-id"
+      >
         {/* Top text */}
         <h2 className="text-4xl font-bold text-gray-800">Explore Our Menu</h2>
 
