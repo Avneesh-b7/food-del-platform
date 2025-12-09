@@ -38,7 +38,23 @@ function StoreContextProvider(props) {
   // useEffect(() => {
   //   console.log(cartItems);
   // }, [cartItems]);
+  // Get full objects for items present in cart
+  const itemsInCart = fooditems_list.filter((item) => cartItems[item._id] > 0);
 
+  // Compute total bill
+  const totalAmount = itemsInCart.reduce((sum, item) => {
+    return sum + item.price * cartItems[item._id];
+  }, 0);
+
+  function deleteItem(id) {
+    setCartItems((prev) => {
+      const updated = { ...prev };
+      delete updated[id];
+      return updated;
+    });
+  }
+
+  const deliveryFee = totalAmount >= 1000 ? 0 : 50;
   const contextValue = {
     // provide values that you need to access
     fooditems_list,
@@ -47,6 +63,10 @@ function StoreContextProvider(props) {
     getItemCount,
     cartItems,
     setCartItems,
+    totalAmount,
+    itemsInCart,
+    deleteItem,
+    deliveryFee,
   };
 
   return (

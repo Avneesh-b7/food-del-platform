@@ -104,7 +104,9 @@ function Navbar({ showLogin, showSignUp }) {
             {/* Cart Button */}
             <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-lg hover:border-red-500 hover:text-red-500 transition-colors">
               <span role="img" aria-label="cart">
-                🛒
+                <HashLink smooth to="/cart">
+                  🛒
+                </HashLink>
               </span>
               {/* Example badge */}
               {totalCount > 0 && (
