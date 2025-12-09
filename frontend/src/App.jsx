@@ -3,7 +3,7 @@ import Navbar from "./components/Navbar/Navbar.jsx";
 import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home/Home.jsx";
 import { Cart } from "./pages/Cart/Cart.jsx";
-import PlaceOrder from "./pages/PlaceOrder/PlaceOrder.jsx";
+import { PlaceOrder } from "./pages/PlaceOrder/PlaceOrder.jsx";
 import { Footer } from "./components/Footer/Footer.jsx";
 import { SignUpPopup } from "./components/SLPopup/SignUpPopup.jsx";
 import { LoginPopup } from "./components/SLPopup/LoginPopup.jsx";

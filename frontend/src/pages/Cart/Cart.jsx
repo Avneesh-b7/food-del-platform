@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { StoreContext } from "../../context/StoreContext";
 import { fooditems_list } from "../../assets/assets"; // <-- IMPORT STATICALLY
+import { HashLink } from "react-router-hash-link";
 
 function Cart() {
   const {
@@ -117,7 +118,9 @@ function Cart() {
               </div>
 
               <button className="w-full mt-4 bg-red-600 text-white py-2 rounded-full hover:bg-red-500 text-sm">
-                Proceed to Checkout
+                <HashLink smooth to="/placeorder">
+                  Proceed to Checkout
+                </HashLink>
               </button>
             </div>
 
