@@ -5,11 +5,12 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "dev": "node server.js"
+    "dev": "node index.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.948.0",
     "bcrypt": "^6.0.0",
     "body-parser": "^2.2.1",
     "cors": "^2.8.5",

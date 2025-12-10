@@ -1,25 +1,23 @@
 import express from "express";
-import dotenv from "dotenv";
 import cors from "cors";
-import { connectDB } from "./db/db_conn.js";
+import { foodRouter } from "./routes/food.router.js";
+import { healthCheckRouter } from "./routes/healthcheck.router.js";
 
 //config
 const app = express();
-dotenv.config({ path: "./.env" });
-const port = process.env.PORT;
 
 //middlewares
-app.use(express.json());
+app.use(express.json({ limit: "16kb" }));
 app.use(cors());
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 
-//db connection
-connectDB();
-// console.log(process.env.MONGO_DB_URI);
+//ROUTES
+app.use("/api/v1/food", foodRouter);
+app.use("/api/v1/healthcheck", healthCheckRouter);
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  // console.log(req);
+  res.send("Hello World! this is the home of food del app !");
 });
 
-app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`);
-});
+export default app;
