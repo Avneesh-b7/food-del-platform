@@ -1,6 +1,6 @@
 import express, { Router } from "express";
 import { addFoodItem } from "../controllers/food.controller.js";
-import { upload } from "../utils/multer.js";
+import { upload, uploadToS3 } from "../utils/multer.js";
 
 const foodRouter = Router();
 

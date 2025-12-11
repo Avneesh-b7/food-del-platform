@@ -30,6 +30,6 @@ const FoodSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-const FoodModel = mongoose.models.foods || mongoose.model("foods", FoodSchema);
+const FoodModel = mongoose.models.food || mongoose.model("food", FoodSchema);
 
 export default FoodModel;
