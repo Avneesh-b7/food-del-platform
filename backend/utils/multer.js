@@ -1,6 +1,16 @@
 import multer from "multer";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from "@aws-sdk/client-s3";
 import crypto from "crypto";
+import mongoose from "mongoose";
+
+// helper functions
+function now() {
+  return new Date().toISOString();
+}
 
 // PROMPT
 // async function uploadToS3() {
@@ -120,6 +130,111 @@ async function uploadToS3(req, folder = "FoodItemImages") {
   }
 }
 
-export { upload, uploadToS3 };
+// PROMPT
+// async function removeFromS3(req, folder = "FoodItemImages") {
+// creates a s3 client ;  const s3 = createS3Client();
+// takes the object id from request (checks if its valid)
+// gets the correspondng image url and parses out the image name
+// deletes the image from S3
+
+// returns industry standard API response codes and errors/ response messages
+// logs all the necessary information to console
+// handles errors gracefully
+// has a verbosity level of medium for all respones/logs so that it is easier for the user to troubleshoot the error
+
+// }
+
+function extractKey(imageUrl) {
+  if (!imageUrl || typeof imageUrl !== "string") return null;
+
+  try {
+    const u = new URL(imageUrl);
+    let key = decodeURIComponent(u.pathname);
+    if (key.startsWith("/")) key = key.slice(1);
+    return key || null;
+  } catch {
+    // Not a URL — treat as raw key
+    return imageUrl;
+  }
+}
+
+async function removeFromS3(imageUrl, folder = "FoodItemImages") {
+  console.info(`[${now()}] removeFromS3 - start`, { imageUrl });
+
+  if (!imageUrl) {
+    return {
+      success: false,
+      message: "No imageUrl provided to removeFromS3",
+    };
+  }
+
+  // Extract key
+  let key = extractKey(imageUrl);
+
+  if (!key) {
+    console.error(`[${now()}] removeFromS3 - unable to extract key`, {
+      imageUrl,
+    });
+    return {
+      success: false,
+      message: "Failed to derive S3 key from the provided image URL",
+    };
+  }
+
+  // If you want to enforce folder prefix (optional):
+  if (folder && !key.startsWith(folder + "/") && !key.includes("/")) {
+    key = `${folder}/${key}`;
+  }
+
+  console.info(`[${now()}] removeFromS3 - derived key`, { key });
+
+  const bucket = process.env.AWS_S3_BUCKET_NAME;
+
+  if (!bucket) {
+    console.error(`[${now()}] removeFromS3 - missing bucket env variable`);
+    return {
+      success: false,
+      message: "S3 bucket environment variable not configured",
+    };
+  }
+
+  const s3 = createS3Client();
+
+  try {
+    const cmd = new DeleteObjectCommand({
+      Bucket: bucket,
+      Key: key,
+    });
+
+    const result = await s3.send(cmd);
+
+    console.info(`[${now()}] removeFromS3 - S3 delete successful`, {
+      bucket,
+      key,
+      result,
+    });
+
+    return {
+      success: true,
+      message: "Image deleted successfully from S3",
+      key,
+      bucket,
+    };
+  } catch (err) {
+    console.error(`[${now()}] removeFromS3 - S3 delete failed`, {
+      error: err?.message || err,
+      key,
+      bucket,
+    });
+
+    return {
+      success: false,
+      message: "Failed to delete image from S3",
+      error: err?.message,
+    };
+  }
+}
+
+export { upload, uploadToS3, removeFromS3 };
 
 // console.log(process.env.AWS_ACCESS_KEY_ID);
