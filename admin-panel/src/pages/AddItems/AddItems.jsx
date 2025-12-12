@@ -22,6 +22,8 @@
 // Usage guideline: Paste this file into your React project and render <AddItems />. Everything is Tailwind-only and centered as requested.
 
 import React, { useState, useRef } from "react";
+import axios from "axios";
+import { BACKEND_PORT } from "../../../constants.js";
 
 export default function AddItems() {
   const fileInputRef = useRef(null);
@@ -31,8 +33,9 @@ export default function AddItems() {
   const [category, setCategory] = useState("");
   const [price, setPrice] = useState("");
   const [errors, setErrors] = useState({});
+  const [submitting, setSubmitting] = useState(false);
 
-  // categories provided by you
+  // categories
   const menu_list = [
     { name: "Desserts" },
     { name: "Appetizers" },
@@ -82,22 +85,53 @@ export default function AddItems() {
     setErrors((prev) => ({ ...prev, image: undefined }));
   };
 
-  const handleSubmit = (e) => {
+  // PROMPT
+  // # next steps
+  // 1. i want to send the response to my backend API which helps me add food
+  // 2. the API endpoint is - https://localhost:{backend_port}/api/v1/food/add
+  // 3. i am using axios (https://axios-http.com/docs/intro)
+  // 4. complete the Handle Submit function and help me push the payload to the backend api end point
+  // #context
+  // herre is the handle submit function --> passed on the function
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validate()) return;
 
-    const payload = {
-      image,
-      name: name.trim(),
-      description: description.trim(),
-      category,
-      price: Number(price),
-    };
+    const file = fileInputRef.current?.files?.[0];
+    if (!file) {
+      alert("Please choose an image");
+      return;
+    }
 
-    // minimal behaviour per prompt: show demo alert
-    alert("Item added (demo) — check console for payload.");
-    console.log("AddItems submit:", payload);
-    resetForm();
+    const formData = new FormData();
+    formData.append("image", file);
+    formData.append("name", name.trim());
+    formData.append("description", description.trim());
+    formData.append("category", category);
+    formData.append("price", String(price));
+
+    try {
+      setSubmitting(true);
+
+      // const url = "http://localhost:3003/api/v1/food/add";
+      const url = `http://localhost:${BACKEND_PORT}/api/v1/food/add`;
+
+      const response = await axios.post(url, formData, {
+        headers: {
+          // DO NOT set Content-Type → axios will set it correctly.
+        },
+        timeout: 15000, // normal safe timeout
+      });
+
+      alert("Item added successfully");
+      resetForm();
+    } catch (err) {
+      console.error(err);
+      alert("Failed: " + (err.response?.data?.message || err.message));
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (

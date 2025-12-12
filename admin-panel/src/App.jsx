@@ -13,7 +13,6 @@ function App() {
     <>
       <h1 className="bg-amber-300 text-center ">welcome to admin panel </h1>
       <Navbar />
-
       <Routes>
         <Route path="/add" element={<AddItems />}></Route>
         <Route path="/list" element={<ListItems />}></Route>
