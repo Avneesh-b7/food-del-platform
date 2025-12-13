@@ -23,9 +23,8 @@
 
 import React, { useState, useRef } from "react";
 import axios from "axios";
-import { BACKEND_PORT } from "../../../constants.js";
 
-export default function AddItems() {
+export default function AddItems({ baseurl }) {
   const fileInputRef = useRef(null);
   const [image, setImage] = useState(null);
   const [name, setName] = useState("");
@@ -114,8 +113,7 @@ export default function AddItems() {
     try {
       setSubmitting(true);
 
-      // const url = "http://localhost:3003/api/v1/food/add";
-      const url = `http://localhost:${BACKEND_PORT}/api/v1/food/add`;
+      const url = baseurl + "/food/add";
 
       const response = await axios.post(url, formData, {
         headers: {
