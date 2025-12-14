@@ -100,8 +100,86 @@ async function registerUser(req, res) {
   }
 }
 
-function loginUser(req, res) {
-  return res.send("sucess req here at login !");
+//PROMPT
+//function loginUser(req, res) {
+// 1. take data from user
+// 2. validate the data
+// 3. check if the user exists
+// 4. if exists - check password / compare password (using UserSchema.methods.comparePassword)
+// 5. if password check is true then send tokens (refresh and access -- need your help in understanding the data flow and writing the logic)
+// 6. if does not exists - give appropriate respones to user
+//  send appropriate responses to users with standard status codes and handle errors gracefully (production grade error handling )
+// this also needs to be secure (make it secure from a safety perspective)
+// }
+
+async function loginUser(req, res) {
+  try {
+    const { email, password } = req.body;
+
+    //input validation
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required.",
+      });
+    }
+
+    // check if exists
+    const user = await UserModel.findOne({ email }).select("+password");
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "No account found with this email.",
+      });
+    }
+
+    //  Validate password
+    const isPasswordValid = await user.comparePassword(password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid password.",
+      });
+    }
+
+    //generate tokens
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
+
+    if (!accessToken || !refreshToken) {
+      return res.status(500).json({
+        success: false,
+        message: "Failed to generate authentication tokens.",
+      });
+    }
+
+    // Persist refresh token and its expiry inside the DB
+    await user.save();
+
+    //resppnse
+    return res.status(200).json({
+      success: true,
+      message: "Login successful.",
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      accessToken,
+      refreshToken, // typically stored in HttpOnly cookies
+    });
+  } catch (err) {
+    console.error("Login error:", err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while logging in.",
+      error: err.message,
+    });
+  }
 }
 
 export { loginUser, registerUser };

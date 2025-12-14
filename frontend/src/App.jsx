@@ -7,6 +7,7 @@ import { PlaceOrder } from "./pages/PlaceOrder/PlaceOrder.jsx";
 import { Footer } from "./components/Footer/Footer.jsx";
 import { SignUpPopup } from "./components/SLPopup/SignUpPopup.jsx";
 import { LoginPopup } from "./components/SLPopup/LoginPopup.jsx";
+import { ToastContainer } from "react-toastify";
 
 function App() {
   const [showSignUpPopup, setShowSignUpPopup] = useState(false);
@@ -14,6 +15,7 @@ function App() {
 
   return (
     <>
+      <ToastContainer position="top-right" autoClose={1200} />
       {showLoginPopup ? (
         <LoginPopup
           showLogin={setShowLoginPopup}

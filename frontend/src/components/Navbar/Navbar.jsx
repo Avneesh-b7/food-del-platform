@@ -1,24 +1,37 @@
-import { useState, useContext, React, useEffect } from "react";
+import { useState, useContext, React } from "react";
 import { StoreContext } from "../../context/StoreContext.jsx";
 import { Link } from "react-router-dom";
 import { HashLink } from "react-router-hash-link";
-import { SignUpPopup } from "../SLPopup/SignUpPopup.jsx";
+import { toast } from "react-toastify";
 
 function Navbar({ showLogin, showSignUp }) {
   const [active, setActive] = useState("noneactive");
 
-  const navItems = ["Home", "Menu", "Contact Us"];
-
-  function handleActive(item) {
-    setActive(item);
-  }
-
-  const { cartItems, setCartItems } = useContext(StoreContext);
+  const { cartItems, user, setUser, accessToken, setAccessToken } =
+    useContext(StoreContext);
 
   const totalCount = Object.values(cartItems).reduce(
     (sum, value) => sum + value,
     0
   );
+
+  const handleLogout = () => {
+    try {
+      // Remove refresh token from localStorage
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+
+      // Clear React auth state
+      setAccessToken("");
+      setUser(null);
+
+      toast.success("Logged out successfully!");
+    } catch (err) {
+      console.error("Logout error:", err);
+      toast.error("Logout failed. Please try again.");
+    }
+  };
 
   return (
     <>
@@ -27,7 +40,6 @@ function Navbar({ showLogin, showSignUp }) {
           {/* Logo */}
           <div className="flex items-center gap-2">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-2xl">
-              <span role="img" aria-label="food"></span>
               🍜
             </div>
             <span className="text-xl font-bold tracking-tight text-gray-800">
@@ -35,65 +47,53 @@ function Navbar({ showLogin, showSignUp }) {
             </span>
           </div>
 
-          {/* Center Nav Links */}
+          {/* Nav Links */}
           <nav className="flex items-center gap-6 text-sm font-medium text-gray-700">
-            <button
-              onClick={() => {
-                handleActive("Home");
-              }}
+            <HashLink
+              smooth
+              to="/"
               className={`${
-                active == "Home"
-                  ? "text-red-500 underline font bold"
+                active === "Home"
+                  ? "text-red-500 underline"
                   : "hover:text-red-500"
               }`}
+              onClick={() => setActive("Home")}
             >
-              <HashLink smooth to="/">
-                Home
-              </HashLink>
-            </button>
+              Home
+            </HashLink>
 
-            <button
-              onClick={() => {
-                handleActive("Menu");
-              }}
+            <HashLink
+              smooth
+              to="/#explore-menu-id"
               className={`${
-                active == "Menu"
-                  ? "text-red-500 underline font bold"
+                active === "Menu"
+                  ? "text-red-500 underline"
                   : "hover:text-red-500"
               }`}
+              onClick={() => setActive("Menu")}
             >
-              <HashLink smooth to="/#explore-menu-id">
-                Menu
-              </HashLink>
-            </button>
+              Menu
+            </HashLink>
 
-            <button
-              onClick={() => {
-                handleActive("Contact Us");
-              }}
+            <HashLink
+              smooth
+              to="/#footer-id"
               className={`${
-                active == "Contact Us"
-                  ? "text-red-500 underline font bold"
+                active === "Contact Us"
+                  ? "text-red-500 underline"
                   : "hover:text-red-500"
               }`}
+              onClick={() => setActive("Contact Us")}
             >
-              <HashLink smooth to="/#footer-id">
-                Contact Us
-              </HashLink>
-            </button>
+              Contact Us
+            </HashLink>
           </nav>
 
-          {/* Right Side: Search + Cart + Sign In */}
+          {/* Right Side */}
           <div className="flex items-center gap-4">
             {/* Search */}
             <div className="flex items-center gap-2 rounded-full border border-gray-300 px-3 py-1.5">
-              <span
-                role="img"
-                aria-label="search"
-                className="text-gray-500 text-sm"
-              >
-                🔍
-              </span>
+              🔍
               <input
                 type="text"
                 placeholder="Search dishes or restaurants"
@@ -101,35 +101,67 @@ function Navbar({ showLogin, showSignUp }) {
               />
             </div>
 
-            {/* Cart Button */}
-            <button className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-lg hover:border-red-500 hover:text-red-500 transition-colors">
-              <span role="img" aria-label="cart">
-                <HashLink smooth to="/cart">
-                  🛒
-                </HashLink>
-              </span>
-              {/* Example badge */}
+            {/* Cart */}
+            <Link
+              to="/cart"
+              className="relative flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-lg hover:border-red-500 hover:text-red-500 transition-colors"
+            >
+              🛒
               {totalCount > 0 && (
                 <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-bold text-white">
                   {totalCount}
                 </span>
               )}
-            </button>
+            </Link>
 
-            {/* Sign In Button */}
-            <button
-              onClick={() => {
-                showSignUp(true);
-                showLogin(false);
-              }}
-              className="rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600 transition-colors"
-            >
-              Sign In
-            </button>
+            {/* ============================
+                 CONDITIONAL AUTH VIEW
+               ============================ */}
+            {!accessToken ? (
+              // User NOT logged in → Show Sign In
+              <button
+                onClick={() => {
+                  showSignUp(true);
+                  showLogin(true);
+                }}
+                className="rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white hover:bg-red-600 transition-colors"
+              >
+                Sign In
+              </button>
+            ) : (
+              // User logged in → Show User Icon + Logout
+              <div className="flex items-center gap-3">
+                {/* <div
+                  className="h-10 w-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 text-xl"
+                  title={user?.name || "User"}
+                >
+                  `{"Hello " + user.name}`
+                </div> */}
+                <div className="flex flex-col items-center">
+                  {/* User Icon */}
+                  <div className="h-10 w-10 flex items-center justify-center rounded-full bg-gray-200 text-gray-700 text-xl">
+                    ⛄︎
+                  </div>
+
+                  {/* Hello Message */}
+                  <span className="text-xs text-gray-700 font-medium mt-1">
+                    {user?.name || "User"}
+                  </span>
+                </div>
+
+                <button
+                  onClick={handleLogout}
+                  className="rounded-full bg-gray-800 px-4 py-2 text-sm font-semibold text-white hover:bg-gray-500 transition-colors"
+                >
+                  Logout
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>
     </>
   );
 }
+
 export default Navbar;

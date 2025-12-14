@@ -1,5 +1,6 @@
 import { useContext, createContext, useState, useEffect } from "react";
 import { fooditems_list } from "../assets/assets.js";
+import { BACKEND_PORT } from "../../constants.js";
 
 //create store context (the box)
 const StoreContext = createContext(null);
@@ -8,6 +9,22 @@ const StoreContext = createContext(null);
 function StoreContextProvider(props) {
   // cartItems will look like: { "1": 2, "5": 1 }  (itemId: quantity)
   const [cartItems, setCartItems] = useState({});
+
+  const [user, setUser] = useState(null);
+
+  const [accessToken, setAccessToken] = useState("");
+
+  const base_url = `http://localhost:${BACKEND_PORT}/api/v1`;
+
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    const savedUserName = localStorage.getItem("user");
+
+    if (token && savedUserName) {
+      setAccessToken(token);
+      setUser({ name: savedUserName });
+    }
+  }, []);
 
   function addToCart(id) {
     const updatedCart = { ...cartItems };
@@ -67,6 +84,11 @@ function StoreContextProvider(props) {
     itemsInCart,
     deleteItem,
     deliveryFee,
+    base_url,
+    user,
+    setUser,
+    accessToken,
+    setAccessToken,
   };
 
   return (
