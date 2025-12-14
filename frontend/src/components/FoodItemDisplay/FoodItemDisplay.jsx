@@ -1,16 +1,13 @@
 import React, { useContext } from "react";
-import {
-  StoreContext,
-  StoreContextProvider,
-} from "../../context/StoreContext.jsx";
+import { StoreContext } from "../../context/StoreContext.jsx";
 import { FoodItem } from "../FoodItem/FoodItem.jsx";
 
 function FoodItemDisplay({ category, setCategory }) {
-  const { fooditems_list } = useContext(StoreContext);
+  const { foodItemsList } = useContext(StoreContext);
 
-  const filtered_array = fooditems_list.filter(function filterFunc(food_item) {
+  const filtered_array = foodItemsList.filter(function filterFunc(food_item) {
     if (category == "all") {
-      return fooditems_list;
+      return foodItemsList;
     }
 
     if (food_item.category === category) {

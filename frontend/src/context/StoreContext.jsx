@@ -1,5 +1,6 @@
 import { useContext, createContext, useState, useEffect } from "react";
-import { fooditems_list } from "../assets/assets.js";
+// import { fooditems_list } from "../assets/assets.js"; --- now we will fetch this from db
+import axios from "axios";
 import { BACKEND_PORT } from "../../constants.js";
 
 //create store context (the box)
@@ -15,6 +16,43 @@ function StoreContextProvider(props) {
   const [accessToken, setAccessToken] = useState("");
 
   const base_url = `http://localhost:${BACKEND_PORT}/api/v1`;
+
+  // PROMPT
+  // help me write a loaddata function
+  // i am writing this function in the store context
+  // const fooditems_list = fetch this data from backend using axios (mongo db)
+  // handle errors gracefully and send appropriate responses and status codes
+  // the food items object in db loooks like this -- {, _id, name, image, price, description ,category}
+  // we need to run this everytime the page is refreshed
+
+  const [foodItemsList, setFoodItemsList] = useState([]);
+
+  const loadData = async () => {
+    try {
+      const res = await axios.get(`${base_url}/food/list`);
+
+      if (res.status === 200 && Array.isArray(res.data.data)) {
+        setFoodItemsList(res.data.data);
+      } else {
+        console.warn("Unexpected API format for food items:", res.data);
+        setFoodItemsList([]);
+      }
+    } catch (err) {
+      console.error("Error fetching food items:", err);
+
+      const message =
+        err?.response?.data?.message ||
+        err?.response?.data?.error ||
+        "Failed to load food items.";
+
+      setFoodItemsList([]);
+    }
+  };
+
+  // Run on refresh only once
+  useEffect(() => {
+    loadData();
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -56,7 +94,7 @@ function StoreContextProvider(props) {
   //   console.log(cartItems);
   // }, [cartItems]);
   // Get full objects for items present in cart
-  const itemsInCart = fooditems_list.filter((item) => cartItems[item._id] > 0);
+  const itemsInCart = foodItemsList.filter((item) => cartItems[item._id] > 0);
 
   // Compute total bill
   const totalAmount = itemsInCart.reduce((sum, item) => {
@@ -74,7 +112,8 @@ function StoreContextProvider(props) {
   const deliveryFee = totalAmount >= 1000 ? 0 : 50;
   const contextValue = {
     // provide values that you need to access
-    fooditems_list,
+    foodItemsList,
+    setFoodItemsList,
     addToCart,
     removeFromCart,
     getItemCount,
