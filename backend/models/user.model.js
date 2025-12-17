@@ -55,7 +55,7 @@ const UserSchema = new mongoose.Schema(
       {
         foodId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Food", // This connects to your Food model
+          ref: "food", // This connects to your Food model
           required: true,
         },
         quantity: {
