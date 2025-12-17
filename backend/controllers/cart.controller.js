@@ -71,43 +71,128 @@ async function addToCart(req, res) {
   }
 }
 
+// PROMPT
+// 1. for remove from cart func i want to have the folllowing functionalities
+// 1. remove one food item
+// 2. remove all the quantities of the food itemfrom the cart
+// 3. have proper validations in place
+// 4. handle errors gracefully and give approprite responses and errror messages
+// 5. log essential infomration so that it is easy for me to troubleshoot
 async function removeFromCart(req, res) {
   try {
     const userId = req.user.id;
-    const { foodId } = req.body;
+    const { foodId, removeAll } = req.body;
 
-    console.info("[CART] RemoveFromCart - payload:", { userId, foodId });
+    console.info("[CART] removeFromCart - Request:", {
+      userId,
+      foodId,
+      removeAll,
+    });
 
+    // ---------------------------------------------------
+    // 1. VALIDATION
+    // ---------------------------------------------------
     if (!foodId) {
+      console.warn("[CART] removeFromCart - Missing foodId");
       return res.status(400).json({
         success: false,
         message: "Food ID is required.",
       });
     }
 
-    // Find user
+    // Fetch user
     const user = await UserModel.findById(userId);
     if (!user) {
-      console.error("[CART] RemoveFromCart - User not found:", userId);
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found." });
+      console.error("[CART] removeFromCart - User not found:", userId);
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
-    const beforeCount = user.cart.length;
+    // Find existing cart item
+    const cartItem = user.cart.find(
+      (item) => item.foodId.toString() === foodId
+    );
 
-    user.cart = user.cart.filter((item) => item.foodId.toString() !== foodId);
-
-    if (beforeCount === user.cart.length) {
+    if (!cartItem) {
+      console.warn("[CART] removeFromCart - Item not found:", foodId);
       return res.status(404).json({
         success: false,
         message: "Item not found in cart.",
       });
     }
 
+    // Ensure quantity is always numeric
+    cartItem.quantity = Number(cartItem.quantity);
+
+    if (isNaN(cartItem.quantity) || cartItem.quantity < 1) {
+      console.error(
+        "[CART] removeFromCart - Invalid stored quantity:",
+        cartItem.quantity
+      );
+      return res.status(500).json({
+        success: false,
+        message: "Invalid quantity stored in cart.",
+      });
+    }
+
+    // ---------------------------------------------------
+    // 2. REMOVE ALL QUANTITIES
+    // ---------------------------------------------------
+    if (removeAll === true) {
+      user.cart = user.cart.filter((item) => item.foodId.toString() !== foodId);
+
+      await user.save();
+
+      console.info("[CART] removeFromCart - Item removed completely:", foodId);
+
+      return res.status(200).json({
+        success: true,
+        message: "Item removed completely from cart.",
+        cart: user.cart,
+      });
+    }
+
+    // ---------------------------------------------------
+    // 3. REMOVE ONE QUANTITY
+    // ---------------------------------------------------
+
+    // If quantity > 1, reduce by 1 but never go below 1
+    if (cartItem.quantity > 1) {
+      cartItem.quantity = cartItem.quantity - 1;
+
+      // Prevent negative values even if somehow corrupted
+      if (cartItem.quantity < 1) {
+        cartItem.quantity = 1;
+      }
+
+      await user.save();
+
+      console.info("[CART] removeFromCart - Reduced quantity:", {
+        foodId,
+        qty: cartItem.quantity,
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "Item quantity reduced.",
+        cart: user.cart,
+      });
+    }
+
+    // ---------------------------------------------------
+    // 4. Quantity is exactly 1 → Remove item fully
+    // ---------------------------------------------------
+
+    user.cart = user.cart.filter((item) => item.foodId.toString() !== foodId);
+
     await user.save();
 
-    console.info("[CART] Item removed. New cart size:", user.cart.length);
+    console.info(
+      "[CART] removeFromCart - Quantity was 1 → item removed:",
+      foodId
+    );
 
     return res.status(200).json({
       success: true,
@@ -115,10 +200,11 @@ async function removeFromCart(req, res) {
       cart: user.cart,
     });
   } catch (err) {
-    console.error("[CART] RemoveFromCart - Error:", err.message || err);
+    console.error("[CART] removeFromCart - Unexpected error:", err);
+
     return res.status(500).json({
       success: false,
-      message: "Failed to remove item from cart.",
+      message: "Server error while removing item from cart.",
       error: err.message,
     });
   }
