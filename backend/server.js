@@ -3,6 +3,7 @@ import cors from "cors";
 import { foodRouter } from "./routes/food.router.js";
 import { healthCheckRouter } from "./routes/healthcheck.router.js";
 import { userRouter } from "./routes/user.router.js";
+import { cartRouter } from "./routes/cart.router.js";
 
 //config
 const app = express();
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use("/api/v1/food", foodRouter);
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/user", userRouter);
+app.use("/api/v1/cart", cartRouter);
 
 app.get("/", (req, res) => {
   // console.log(req);

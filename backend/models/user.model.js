@@ -37,19 +37,39 @@ const UserSchema = new mongoose.Schema(
       select: false,
     },
 
-    //  Refresh Token (for session persistence)
+    // Refresh token (session persistence)
     refreshToken: {
       type: String,
       default: null,
-      select: false, // never expose this to frontend
+      select: false,
     },
 
-    //  Optional expiry timestamp (extra security)
     refreshTokenExpiry: {
       type: Date,
       default: null,
       select: false,
     },
+
+    //  CART STRUCTURE
+    cart: [
+      {
+        foodId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Food", // This connects to your Food model
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          required: true,
+          min: 1,
+          default: 1,
+        },
+        addedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );
@@ -60,7 +80,7 @@ UserSchema.methods.generateAccessToken = function () {
     return jwt.sign(
       { id: this._id, email: this.email },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "2m" }
+      { expiresIn: "10m" }
     );
   } catch (err) {
     console.error("Access token error:", err);
