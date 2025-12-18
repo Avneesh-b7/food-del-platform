@@ -1,11 +1,10 @@
 import React, { useContext, useState } from "react";
 import { StoreContext } from "../../context/StoreContext";
-import { fooditems_list } from "../../assets/assets"; // <-- IMPORT STATICALLY
+// import { fooditems_list } from "../../assets/assets"; // <-- IMPORT STATICALLY
 import { HashLink } from "react-router-hash-link";
 
 function Cart() {
   const {
-    fooditems_list,
     addToCart,
     removeFromCart,
     getItemCount,

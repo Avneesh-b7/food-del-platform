@@ -374,7 +374,7 @@ function StoreContextProvider(props) {
     cartItems,
     setCartItems,
     totalAmount,
-    // itemsInCart,
+    itemsInCart,
     deleteItem,
     deliveryFee,
     base_url,

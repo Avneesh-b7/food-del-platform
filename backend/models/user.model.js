@@ -78,7 +78,7 @@ const UserSchema = new mongoose.Schema(
 UserSchema.methods.generateAccessToken = function () {
   try {
     return jwt.sign(
-      { id: this._id, email: this.email },
+      { id: this._id, email: this.email, name: this.name, role: this.role },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "10m" }
     );
