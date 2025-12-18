@@ -1,4 +1,7 @@
-##GENERAL PROMPTS (used at a function level)
+# PROMPTS (used at a function level)
+
+## GENERAL INSTRUCTIONS
+
 -- ensure appropriate validations
 -- make sure to handle errors gracefully
 -- send appropriate status codes and error & response messages
