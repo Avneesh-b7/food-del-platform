@@ -4,7 +4,8 @@ import { toast } from "react-toastify";
 import { StoreContext } from "../../context/StoreContext.jsx";
 
 function LoginPopup({ showLogin, showSignUp }) {
-  const { base_url, setUser, setAccessToken } = useContext(StoreContext);
+  const { base_url, setUser, setAccessToken, setIsAuthenticated } =
+    useContext(StoreContext);
 
   const [loginData, setLoginData] = useState({
     email: "",
@@ -45,6 +46,7 @@ function LoginPopup({ showLogin, showSignUp }) {
 
         // Store access token in React Context for in-app usage
         setAccessToken(response.data.accessToken);
+        setIsAuthenticated(true);
         localStorage.setItem("accessToken", response.data.accessToken);
 
         // Store user globally

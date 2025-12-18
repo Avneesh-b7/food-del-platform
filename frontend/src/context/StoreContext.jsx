@@ -13,6 +13,7 @@ function StoreContextProvider(props) {
   const [cartItems, setCartItems] = useState({});
 
   const [user, setUser] = useState(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   const [accessToken, setAccessToken] = useState("");
 
@@ -27,6 +28,55 @@ function StoreContextProvider(props) {
   // we need to run this everytime the page is refreshed
 
   const [foodItemsList, setFoodItemsList] = useState([]);
+
+  const handleLogout = () => {
+    try {
+      // Remove refresh token from localStorage
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+
+      // Clear React auth state
+      setAccessToken("");
+      setUser(null);
+
+      setAccessToken("");
+      setUser(null);
+      setIsAuthenticated(false);
+      setCartItems({});
+
+      toast.success("Logged out successfully!");
+    } catch (err) {
+      console.error("Logout error:", err);
+      toast.error("Logout failed. Please try again.");
+    }
+  };
+
+  async function verify(token, logoutFunc) {
+    try {
+      const res = await axios.get(`${base_url}/auth/verify`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.data.success) {
+        console.info(
+          "[Auth] Token valid. Restoring user:",
+          res.data.user.email
+        );
+        console.log(res);
+        setUser({ name: res.data.user.email });
+        setIsAuthenticated(true);
+        return;
+      }
+    } catch (err) {
+      console.warn("[Auth] Token invalid/expired:", err?.response?.data);
+      console.log(err);
+
+      logoutFunc();
+    }
+  }
 
   const loadCartFromDB = async () => {
     try {
@@ -93,29 +143,27 @@ function StoreContextProvider(props) {
     }
   };
 
-  // Run on refresh only once
+  useEffect(() => {
+    const token = localStorage.getItem("accessToken");
+    if (!token) return;
+
+    setAccessToken(token);
+    verify(token, handleLogout);
+  }, []);
+
   useEffect(() => {
     loadData();
   }, []);
 
   useEffect(() => {
-    if (accessToken) {
-      console.info("[StoreContext] Access token found → Loading cart");
+    if (accessToken && isAuthenticated) {
+      console.info("[StoreContext] User authenticated → Loading cart");
       loadCartFromDB();
-    } else {
-      console.warn("[StoreContext] No token → Not loading cart");
     }
-  }, [accessToken]);
-
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
-    const savedUserName = localStorage.getItem("user");
-
-    if (token && savedUserName) {
-      setAccessToken(token);
-      setUser({ name: savedUserName });
-    }
-  }, []);
+    // else {
+    //   console.warn("[StoreContext] Not authenticated → Skipping cart load");
+    // }
+  }, [accessToken, isAuthenticated]);
 
   // PROMPT
   // function addToCart(id) {
@@ -335,6 +383,10 @@ function StoreContextProvider(props) {
     accessToken,
     setAccessToken,
     loadCartFromDB,
+    verify,
+    handleLogout,
+    isAuthenticated,
+    setIsAuthenticated,
   };
 
   return (

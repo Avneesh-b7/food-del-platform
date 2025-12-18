@@ -7,31 +7,19 @@ import { toast } from "react-toastify";
 function Navbar({ showLogin, showSignUp }) {
   const [active, setActive] = useState("noneactive");
 
-  const { cartItems, user, setUser, accessToken, setAccessToken } =
-    useContext(StoreContext);
+  const {
+    cartItems,
+    user,
+    setUser,
+    accessToken,
+    setAccessToken,
+    handleLogout,
+  } = useContext(StoreContext);
 
   const totalCount = Object.values(cartItems).reduce(
     (sum, value) => sum + value,
     0
   );
-
-  const handleLogout = () => {
-    try {
-      // Remove refresh token from localStorage
-      localStorage.removeItem("refreshToken");
-      localStorage.removeItem("accessToken");
-      localStorage.removeItem("user");
-
-      // Clear React auth state
-      setAccessToken("");
-      setUser(null);
-
-      toast.success("Logged out successfully!");
-    } catch (err) {
-      console.error("Logout error:", err);
-      toast.error("Logout failed. Please try again.");
-    }
-  };
 
   return (
     <>

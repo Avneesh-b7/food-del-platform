@@ -4,6 +4,7 @@ import { foodRouter } from "./routes/food.router.js";
 import { healthCheckRouter } from "./routes/healthcheck.router.js";
 import { userRouter } from "./routes/user.router.js";
 import { cartRouter } from "./routes/cart.router.js";
+import { authRouter } from "./routes/auth.router.js";
 
 //config
 const app = express();
@@ -25,6 +26,7 @@ app.use("/api/v1/food", foodRouter);
 app.use("/api/v1/healthcheck", healthCheckRouter);
 app.use("/api/v1/user", userRouter);
 app.use("/api/v1/cart", cartRouter);
+app.use("/api/v1/auth", authRouter);
 
 app.get("/", (req, res) => {
   // console.log(req);
