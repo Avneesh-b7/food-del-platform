@@ -74,7 +74,7 @@ function Navbar({ showLogin, showSignUp }) {
           {/* My Orders → Only show if user logged in */}
           {accessToken && (
             <Link
-              to="/myorders"
+              to="/orders/myorders"
               className={`${
                 active === "My Orders"
                   ? "text-red-500 underline font-bold"

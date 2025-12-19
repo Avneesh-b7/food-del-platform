@@ -80,7 +80,20 @@ function PlaceOrder() {
       if (res.data.success) {
         toast.success("Order placed successfully!");
         setCartItems({});
-        setDeliveryInfo({});
+        // setDeliveryInfo({});
+        setDeliveryInfo({
+          deliveryInfo: {
+            firstName: "",
+            lastName: "",
+            address: "",
+            email: "",
+            pincode: "",
+            city: "",
+            phone: "",
+            country: "",
+          },
+          paymentStatus: true,
+        });
         await loadCartFromDB();
         console.log("[PlaceOrder] Order response:", res.data);
 
