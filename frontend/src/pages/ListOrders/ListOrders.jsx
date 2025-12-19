@@ -102,14 +102,23 @@ const ListOrders = () => {
                 <h2 className="font-semibold text-gray-800">
                   Order #{order._id.slice(-6).toUpperCase()}
                 </h2>
+
                 <span
-                  className={`text-sm px-3 py-1 rounded-full ${
-                    order.orderStatus === "completed"
-                      ? "bg-green-100 text-green-700"
-                      : order.orderStatus === "cancelled"
-                      ? "bg-red-100 text-red-700"
-                      : "bg-yellow-100 text-yellow-700"
-                  }`}
+                  className={`text-sm px-3 py-1 rounded-full 
+                      ${
+                        order.orderStatus === "completed"
+                          ? "bg-green-100 text-green-700"
+                          : order.orderStatus === "cancelled"
+                          ? "bg-red-100 text-red-700"
+                          : order.orderStatus === "preparing food"
+                          ? "bg-yellow-100 text-yellow-700"
+                          : order.orderStatus === "out for delivery"
+                          ? "bg-blue-100 text-blue-700"
+                          : order.orderStatus === "accepted"
+                          ? "bg-gray-200 text-gray-700"
+                          : "bg-gray-100 text-gray-600"
+                      }
+                    `}
                 >
                   {order.orderStatus}
                 </span>

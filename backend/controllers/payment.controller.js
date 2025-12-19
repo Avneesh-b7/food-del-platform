@@ -115,7 +115,7 @@ async function placeOrder(req, res) {
       totalAmount,
       paymentSuccessful: true,
       paymentTimestamp: new Date(),
-      orderStatus: "completed",
+      orderStatus: "accepted",
     });
 
     console.info("[placeOrder] ORDER SAVED:", order._id);

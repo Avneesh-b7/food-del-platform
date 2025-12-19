@@ -180,8 +180,14 @@ const OrderSchema = new mongoose.Schema(
     // 6️⃣ ORDER STATUS
     orderStatus: {
       type: String,
-      enum: ["pending", "in_progress", "completed", "cancelled"],
-      default: "pending",
+      enum: [
+        "out for delivery",
+        "preparing food",
+        "completed",
+        "cancelled",
+        "accepted",
+      ],
+      default: "accepted",
     },
   },
   { timestamps: true }
