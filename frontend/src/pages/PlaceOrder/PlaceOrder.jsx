@@ -1,10 +1,11 @@
-import React, { useContext } from "react";
 import { StoreContext } from "../../context/StoreContext.jsx";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { toast } from "react-toastify";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function PlaceOrder() {
+  const navigate = useNavigate();
   const {
     cartItems,
     totalAmount,
@@ -83,8 +84,8 @@ function PlaceOrder() {
         await loadCartFromDB();
         console.log("[PlaceOrder] Order response:", res.data);
 
-        // Optional: redirect to success page
-        // navigate(`/order-success/${res.data.orderId}`);
+        const orderId = res.data.orderId;
+        navigate(`/orders/success/${orderId}`);
       } else {
         toast.error(res.data.message || "Order failed");
       }

@@ -8,6 +8,7 @@ import { Footer } from "./components/Footer/Footer.jsx";
 import { SignUpPopup } from "./components/SLPopup/SignUpPopup.jsx";
 import { LoginPopup } from "./components/SLPopup/LoginPopup.jsx";
 import { ToastContainer } from "react-toastify";
+import { OrderSuccess } from "./pages/OrderSuccess/OrderSuccess.jsx";
 
 function App() {
   const [showSignUpPopup, setShowSignUpPopup] = useState(false);
@@ -38,6 +39,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/placeorder" element={<PlaceOrder />} />
+          <Route path="/orders/success/:orderId" element={<OrderSuccess />} />
         </Routes>
         <Footer />
       </div>
