@@ -80,7 +80,7 @@ UserSchema.methods.generateAccessToken = function () {
     return jwt.sign(
       { id: this._id, email: this.email, name: this.name, role: this.role },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "10m" }
+      { expiresIn: "3m" }
     );
   } catch (err) {
     console.error("Access token error:", err);
@@ -92,7 +92,7 @@ UserSchema.methods.generateAccessToken = function () {
 UserSchema.methods.generateRefreshToken = function () {
   try {
     const token = jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
-      expiresIn: "10m",
+      expiresIn: "7m",
     });
 
     // store it on the user model
