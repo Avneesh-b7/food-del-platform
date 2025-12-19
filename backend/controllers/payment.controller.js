@@ -142,5 +142,132 @@ async function placeOrder(req, res) {
   }
 }
 
+/*
+PROMPTS
+this is the function : async function listOrders(req, res) {}
+# here are some things to keep in mind -->
+1. before this function executes we have the auth middleware which gives passes request in the form of this :
+ req.user = {
+  id: "6940c9ed3f82a330b9e7a514",
+  name: "Penny",
+  email: "penny@example.com",
+  role: "USER"
+};
+2. this functions takes the user id and searches the orders table for all the orders by that user 
+3. this is how the order document looks like -- {order document here pasted}
+4. retunrns all the relevant info to be displayed in the front end
+
+# general instructions 
+{prompts.md here}
+*/
+
+// USAGE: listOrders() returns all orders belonging to the logged-in user.
+// This function expects req.user.id (added by authMiddleware).
+
+async function listOrders(req, res) {
+  console.info("[listOrders] START");
+
+  try {
+    // ----------------------------------------
+    // 1️⃣ VALIDATION: Ensure user exists in req
+    // ----------------------------------------
+    if (!req.user || !req.user.id) {
+      console.warn("[listOrders] Missing req.user – auth middleware failure");
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized. User data not found.",
+      });
+    }
+
+    const userId = req.user.id;
+    console.info("[listOrders] Fetching orders for user:", userId);
+
+    // ----------------------------------------
+    // 2️⃣ QUERY ORDERS FROM DB
+    // ----------------------------------------
+    const orders = await OrderModel.find({ userId })
+      .sort({ createdAt: -1 }) // latest first
+      .lean(); // faster read-only docs
+
+    // ----------------------------------------
+    // 3️⃣ HANDLE CASE: No orders
+    // ----------------------------------------
+    if (!orders || orders.length === 0) {
+      console.info("[listOrders] No orders found for user:", userId);
+
+      return res.status(200).json({
+        success: true,
+        message: "No orders found for this user.",
+        orders: [],
+      });
+    }
+
+    // ----------------------------------------
+    // 4️⃣ SUCCESS RESPONSE
+    // ----------------------------------------
+    console.info(`[listOrders] Found ${orders.length} orders for user`);
+
+    return res.status(200).json({
+      success: true,
+      message: "Orders retrieved successfully.",
+      orders,
+    });
+  } catch (err) {
+    // ----------------------------------------
+    // 5️⃣ ERROR HANDLING
+    // ----------------------------------------
+    console.error("[listOrders] ERROR:", err.message || err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while retrieving orders.",
+      error: err.message,
+    });
+  }
+}
+
+/*
+sample output to list orders looks like this -->
+{
+  "success": true,
+  "message": "Orders retrieved successfully.",
+  "orders": [
+    {
+      "_id": "6944eebd3db5eb280f273e65",
+      "userId": "6944cc8a0a177a015c33538a",
+      "userName": "a1",
+      "items": [
+        {
+          "foodId": "693bdb145cb6cdac9f7d2b88",
+          "name": "paneer burger",
+          "price": 399,
+          "quantity": 1,
+          "totalItemPrice": 399
+        }
+      ],
+      "deliveryInfo": {
+        "firstName": "Cooper",
+        "lastName": "Cooper",
+        "address": "princeton",
+        "email": "admin@gmail.com",
+        "pincode": "90099",
+        "city": "princeton",
+        "country": "USA",
+        "phone": "9826929589"
+      },
+      "subtotal": 399,
+      "deliveryFee": 50,
+      "totalAmount": 449,
+      "paymentSuccessful": true,
+      "paymentTimestamp": "2025-12-19T06:20:44.999Z",
+      "orderStatus": "completed",
+      "createdAt": "2025-12-19T06:20:45.006Z",
+      "updatedAt": "2025-12-19T06:20:45.006Z"
+    }
+  ]
+}
+*/
+
 async function makePayment(req, res) {}
-export { makePayment, placeOrder };
+
+export { makePayment, placeOrder, listOrders };
