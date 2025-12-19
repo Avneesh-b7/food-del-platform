@@ -268,6 +268,154 @@ sample output to list orders looks like this -->
 }
 */
 
-async function makePayment(req, res) {}
+/*
+PROMPTS 
+so help me write the listAll function in order.controllers.js
+1. this queries all the orders from the orders document in the db
+2. returns all the  required info to the admin panel 
+3. general prompts are: 
+*/
+// ================================================
+// listAll()
+// USAGE: Fetches ALL orders in the system for admin panel.
+// Returns complete order details sorted by newest first.
+// ================================================
 
-export { makePayment, placeOrder, listOrders };
+async function listAll(req, res) {
+  console.info("[Admin][listAll] Fetching all orders...");
+
+  try {
+    // ==========================================
+    // 1️⃣ Fetch all orders sorted by createdAt DESC
+    // ==========================================
+    const orders = await OrderModel.find({}).sort({ createdAt: -1 }).lean(); // lean() = faster, returns plain JS objects
+
+    // ==========================================
+    // 2️⃣ If no orders found
+    // ==========================================
+    if (!orders || orders.length === 0) {
+      console.warn("[Admin][listAll] No orders found in database");
+      return res.status(200).json({
+        success: true,
+        message: "No orders found.",
+        orders: [],
+      });
+    }
+
+    // ==========================================
+    // 3️⃣ Return orders
+    // ==========================================
+    console.info(`[Admin][listAll] Found ${orders.length} orders`);
+    return res.status(200).json({
+      success: true,
+      count: orders.length,
+      orders,
+    });
+  } catch (err) {
+    // ==========================================
+    // 4️⃣ ERROR HANDLING
+    // ==========================================
+    console.error("[Admin][listAll] Unexpected Error:", err.message || err);
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while retrieving orders.",
+      error: err.message || "Unknown error",
+    });
+  }
+}
+
+/*
+PROMPTS 
+so help me write the updateStatus function in order.controllers.js
+1. this sends a particular order id (which has the status updated) as a part of the request
+2. updates the status change in the backend
+3. general prompts are: 
+*/
+// ======================================================================
+// updateStatus()
+// USAGE: Admin updates the orderStatus of a specific order.
+// Request Body: { "orderId": "...", "status": "completed" }
+// ======================================================================
+
+async function updateStatus(req, res) {
+  console.info("[Admin][updateStatus] Incoming request:", req.body);
+
+  try {
+    const { orderId, status } = req.body;
+
+    // -------------------------------
+    // 1️⃣ VALIDATE INPUT
+    // -------------------------------
+    if (!orderId || !status) {
+      console.warn("[Admin][updateStatus] Missing fields");
+      return res.status(400).json({
+        success: false,
+        message: "orderId and status are required.",
+      });
+    }
+
+    // Allowed statuses
+    const allowedStatuses = [
+      "out for delivery",
+      "preparing food",
+      "completed",
+      "cancelled",
+      "accepted",
+    ];
+
+    if (!allowedStatuses.includes(status)) {
+      console.warn("[Admin][updateStatus] Invalid status:", status);
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status. Allowed statuses are: ${allowedStatuses.join(
+          ", "
+        )}.`,
+      });
+    }
+
+    // -------------------------------
+    // 2️⃣ FIND & UPDATE ORDER
+    // -------------------------------
+    const updatedOrder = await OrderModel.findByIdAndUpdate(
+      orderId,
+      { orderStatus: status },
+      { new: true } // return updated document
+    );
+
+    if (!updatedOrder) {
+      console.warn("[Admin][updateStatus] Order not found:", orderId);
+      return res.status(404).json({
+        success: false,
+        message: "Order not found.",
+      });
+    }
+
+    console.info(`[Admin][updateStatus] Order ${orderId} updated → ${status}`);
+
+    // -------------------------------
+    // 3️⃣ SUCCESS RESPONSE
+    // -------------------------------
+    return res.status(200).json({
+      success: true,
+      message: "Order status updated successfully.",
+      order: updatedOrder,
+    });
+  } catch (err) {
+    // -------------------------------
+    // 4️⃣ ERROR HANDLING
+    // -------------------------------
+    console.error(
+      "[Admin][updateStatus] Unexpected Error:",
+      err.message || err
+    );
+
+    return res.status(500).json({
+      success: false,
+      message: "Server error while updating order status.",
+      error: err.message,
+    });
+  }
+}
+
+export { placeOrder, listOrders, listAll, updateStatus };
