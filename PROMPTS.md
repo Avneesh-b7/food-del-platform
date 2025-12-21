@@ -12,3 +12,5 @@
 -- do not export functions
 
 -- make it look and feel like a professional UI
+
+make one master prompt and one before every input prompt
