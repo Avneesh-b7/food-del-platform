@@ -1,6 +1,7 @@
+/*
 import { useContext, createContext, useState, useEffect } from "react";
-// import { fooditems_list } from "../assets/assets.js"; --- now we will fetch this from db
 import axios from "axios";
+import { api, registerRefreshLogger } from "../api/api.interceptors.js";
 import { BACKEND_PORT } from "../../constants.js";
 import { toast } from "react-toastify";
 
@@ -54,11 +55,7 @@ function StoreContextProvider(props) {
 
   async function verify(token, logoutFunc) {
     try {
-      const res = await axios.get(`${base_url}/auth/verify-access-token`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await api.get(`auth/verify-access-token`);
 
       if (res.data.success) {
         console.info(
@@ -87,14 +84,9 @@ function StoreContextProvider(props) {
 
       console.info("[loadCartFromDB] Fetching cart from backend...");
 
-      const res = await axios.get(
-        `${base_url}/cart/list`,
+      const res = await api.get(
+        `/cart/list`
         // {},
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
       );
 
       if (!res.data.success) {
@@ -123,7 +115,8 @@ function StoreContextProvider(props) {
 
   const loadData = async () => {
     try {
-      const res = await axios.get(`${base_url}/food/list`);
+      const res = await api.get(`
+        /food/list`);
 
       if (res.status === 200 && Array.isArray(res.data.data)) {
         setFoodItemsList(res.data.data);
@@ -210,18 +203,10 @@ function StoreContextProvider(props) {
       // -------------------------
       // 2️⃣ Notify backend
       // -------------------------
-      const res = await axios.post(
-        `${base_url}/cart/add`,
-        {
-          foodId: foodId, // ObjectId string ✔
-          quantity: 1, // Number ✔
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const res = await api.post(`/cart/add`, {
+        foodId: foodId, // ObjectId string ✔
+        quantity: 1, // Number ✔
+      });
 
       console.info("[addToCart] Backend response:", res.data);
 
@@ -304,18 +289,10 @@ function StoreContextProvider(props) {
       // ------------------------------------
       // 3️⃣ SYNC WITH BACKEND
       // ------------------------------------
-      const res = await axios.post(
-        `${base_url}/cart/remove`,
-        {
-          foodId,
-          removeAll,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
+      const res = await api.post(`/cart/remove`, {
+        foodId,
+        removeAll,
+      });
 
       console.info("[removeFromCart] Backend response:", res.data);
 
@@ -392,6 +369,249 @@ function StoreContextProvider(props) {
   return (
     <StoreContext.Provider value={contextValue}>
       {props.children}
+    </StoreContext.Provider>
+  );
+}
+
+export { StoreContext, StoreContextProvider };
+*/
+
+import { createContext, useState, useEffect } from "react";
+import { api, registerRefreshLogger } from "../api/api.interceptors.js";
+import { toast } from "react-toastify";
+import { BACKEND_PORT } from "../../constants.js";
+
+const StoreContext = createContext(null);
+
+function StoreContextProvider({ children }) {
+  // -----------------------
+  // GLOBAL STATE
+  // -----------------------
+  const [cartItems, setCartItems] = useState({});
+  const [foodItemsList, setFoodItemsList] = useState([]);
+  const [user, setUser] = useState(null);
+  const [accessToken, setAccessToken] = useState("");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const base_url = `http://localhost:${BACKEND_PORT}/api/v1`;
+
+  // -----------------------
+  // LOGOUT FUNCTION
+  // -----------------------
+  const handleLogout = () => {
+    try {
+      localStorage.removeItem("refreshToken");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("user");
+
+      setAccessToken("");
+      setUser(null);
+      setIsAuthenticated(false);
+      setCartItems({});
+
+      toast.success("Logged out successfully!");
+    } catch (err) {
+      console.error("Logout error:", err);
+      toast.error("Logout failed. Please try again.");
+    }
+  };
+
+  // -----------------------
+  // VERIFY ACCESS TOKEN (Runs ONLY on app startup)
+  // -----------------------
+  async function verify(token) {
+    try {
+      const res = await api.get("/auth/verify-access-token", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (res.data.success) {
+        console.info("[Auth] Token valid:", res.data.user.email);
+        setUser({
+          name: res.data.user.name,
+          email: res.data.user.email,
+        });
+        setIsAuthenticated(true);
+      }
+    } catch (err) {
+      console.warn("[Auth] Token invalid/expired", err?.response?.data);
+      handleLogout();
+    }
+  }
+
+  // -----------------------
+  // LOAD FOOD ITEMS
+  // -----------------------
+  const loadData = async () => {
+    try {
+      const res = await api.get("/food/list");
+
+      if (Array.isArray(res.data.data)) {
+        setFoodItemsList(res.data.data);
+      } else {
+        console.warn("Unexpected food items response:", res.data);
+        setFoodItemsList([]);
+      }
+    } catch (err) {
+      console.error("Error loading food items:", err);
+      toast.error("Failed to load food items");
+    }
+  };
+
+  // -----------------------
+  // LOAD CART FROM BACKEND
+  // -----------------------
+  const loadCartFromDB = async () => {
+    try {
+      if (!accessToken) return;
+
+      const res = await api.get("/cart/list");
+
+      if (!res.data.success) return;
+
+      const mapped = {};
+      res.data.cart.forEach((item) => {
+        if (item.foodId?._id) {
+          mapped[item.foodId._id] = Number(item.quantity);
+        }
+      });
+
+      setCartItems(mapped);
+      console.info("[Cart] Loaded:", mapped);
+    } catch (err) {
+      console.error("Cart load error:", err);
+      toast.error("Failed to load cart");
+    }
+  };
+
+  // --------------------------------------
+  // ADD TO CART
+  // --------------------------------------
+  async function addToCart(foodId) {
+    try {
+      if (!isAuthenticated) {
+        toast.error("Please login to add items");
+        return;
+      }
+
+      setCartItems((prev) => ({
+        ...prev,
+        [foodId]: Number(prev[foodId] || 0) + 1,
+      }));
+
+      await api.post("/cart/add", {
+        foodId,
+        quantity: 1,
+      });
+
+      toast.success("Added to cart");
+    } catch (err) {
+      console.error("Add to cart error:", err);
+      toast.error("Error adding item");
+    }
+  }
+
+  // --------------------------------------
+  // REMOVE FROM CART
+  // --------------------------------------
+  async function removeFromCart(foodId, removeAll = false) {
+    try {
+      if (!isAuthenticated) {
+        toast.error("Please login first");
+        return;
+      }
+
+      setCartItems((prev) => {
+        const qty = Number(prev[foodId] || 0);
+        const newQty = removeAll ? 0 : qty - 1;
+
+        return {
+          ...prev,
+          [foodId]: Math.max(newQty, 0),
+        };
+      });
+
+      await api.post("/cart/remove", {
+        foodId,
+        removeAll,
+      });
+
+      toast.success("Cart updated");
+    } catch (err) {
+      console.error("Remove from cart error:", err);
+      toast.error("Failed to update cart");
+    }
+  }
+
+  // -----------------------
+  // ITEMS IN CART
+  // -----------------------
+  const itemsInCart = foodItemsList.filter((item) => cartItems[item._id] > 0);
+
+  const totalAmount = itemsInCart.reduce(
+    (sum, item) => sum + item.price * cartItems[item._id],
+    0
+  );
+
+  const deliveryFee = totalAmount >= 1000 ? 0 : 50;
+
+  // -----------------------
+  // ON APP STARTUP
+  // -----------------------
+  useEffect(() => {
+    registerRefreshLogger((msg) =>
+      console.log("%c[REFRESH EVENT]", "color:orange", msg)
+    );
+
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      setAccessToken(token);
+      verify(token);
+    }
+  }, []);
+
+  // -----------------------
+  // LOAD FOOD ITEMS ONCE
+  // -----------------------
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  // -----------------------
+  // AFTER LOGIN → LOAD CART
+  // -----------------------
+  useEffect(() => {
+    if (isAuthenticated) loadCartFromDB();
+  }, [isAuthenticated]);
+
+  // -----------------------
+  // CONTEXT VALUE
+  // -----------------------
+  return (
+    <StoreContext.Provider
+      value={{
+        foodItemsList,
+        cartItems,
+        setCartItems,
+        itemsInCart,
+        totalAmount,
+        deliveryFee,
+        base_url,
+
+        addToCart,
+        removeFromCart,
+
+        user,
+        isAuthenticated,
+        accessToken,
+        setAccessToken,
+        setUser,
+        setIsAuthenticated,
+
+        loadCartFromDB,
+        handleLogout,
+      }}
+    >
+      {children}
     </StoreContext.Provider>
   );
 }

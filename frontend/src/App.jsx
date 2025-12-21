@@ -10,6 +10,7 @@ import { LoginPopup } from "./components/SLPopup/LoginPopup.jsx";
 import { ToastContainer } from "react-toastify";
 import { OrderSuccess } from "./pages/OrderSuccess/OrderSuccess.jsx";
 import { ListOrders } from "./pages/ListOrders/ListOrders.jsx";
+import { TokenLifecyclePanel } from "./components/TokenLifecyclePanel/TokenLifecyclePanel.jsx";
 
 function App() {
   const [showSignUpPopup, setShowSignUpPopup] = useState(false);
@@ -43,6 +44,7 @@ function App() {
           <Route path="/orders/success/:orderId" element={<OrderSuccess />} />
           <Route path="/orders/myorders" element={<ListOrders />} />
         </Routes>
+        <TokenLifecyclePanel />
         <Footer />
       </div>
     </>

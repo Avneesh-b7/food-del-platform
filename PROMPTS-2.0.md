@@ -7,7 +7,7 @@ This file contains two prompts:
 
 ---
 
-# 1️⃣ MASTER PROMPT (Use once per session)
+# MASTER PROMPT (Use once per session)
 
 From now on, whenever I ask you to generate a backend function, follow this exact style and structure unless I explicitly override something.
 
@@ -47,13 +47,11 @@ When I later send requirements, assume all rules above automatically apply.
 
 ---
 
-# 2️⃣ GENERAL / RE-USABLE FUNCTION PROMPT
-
-(Use this every time you want ChatGPT to generate a backend function)
+# GENERAL / RE-USABLE FUNCTION PROMPT
 
 You are generating a **production-grade backend function** for a Node.js backend.
 
-## Follow these requirements strictly:
+## Follow these requirements:
 
 ### GENERAL REQUIREMENTS
 
@@ -79,4 +77,4 @@ TASK
 Now generate the function for the following requirement:
 INSERT REQUIREMENT HERE
 
-- you can optimize this according to the etxt stak that you use
+- you can optimize this according to the tech stak that you use
