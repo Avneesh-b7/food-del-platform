@@ -54,7 +54,7 @@ function StoreContextProvider(props) {
 
   async function verify(token, logoutFunc) {
     try {
-      const res = await axios.get(`${base_url}/auth/verify`, {
+      const res = await axios.get(`${base_url}/auth/verify-access-token`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import ms from "ms";
 
 //PROMPT
 // const UserSchema = new mongoose.Schema({
@@ -80,7 +81,7 @@ UserSchema.methods.generateAccessToken = function () {
     return jwt.sign(
       { id: this._id, email: this.email, name: this.name, role: this.role },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "3m" }
+      { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
     );
   } catch (err) {
     console.error("Access token error:", err);
@@ -92,12 +93,15 @@ UserSchema.methods.generateAccessToken = function () {
 UserSchema.methods.generateRefreshToken = function () {
   try {
     const token = jwt.sign({ id: this._id }, process.env.REFRESH_TOKEN_SECRET, {
-      expiresIn: "7m",
+      expiresIn: process.env.REFRESH_TOKEN_EXPIRY, // e.g. "7d"
     });
 
-    // store it on the user model
+    // store token on user
     this.refreshToken = token;
-    this.refreshTokenExpiry = new Date(Date.now() + 10 * 60 * 1000);
+
+    // convert "7d" → milliseconds → Date object
+    const expiryTime = ms(process.env.REFRESH_TOKEN_EXPIRY);
+    this.refreshTokenExpiry = new Date(Date.now() + expiryTime);
 
     return token;
   } catch (err) {
